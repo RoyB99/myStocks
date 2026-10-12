@@ -3,8 +3,11 @@
 // enforcement (unlike a JS password screen, which ships the files first).
 //
 // How the allowlist is configured:
-//   Set a Cloudflare Pages env var ALLOWED_IPS="1.2.3.4,5.6.0.0/16".
-//   No IPs are stored in this repo (it is public). If the env var is
+//   Cloudflare Pages env var ALLOWED_IPS="1.2.3.4,5.6.0.0/16".
+//   No IPs are stored in this repo (it is public). The value is synced
+//   from the encrypted GitHub secret ALLOWED_IPS by the
+//   "Sync IP allowlist to Cloudflare Pages" workflow
+//   (.github/workflows/sync-allowlist.yml). If the env var is
 //   missing or empty, ALL requests are denied (fail closed).
 //
 // IPv4 exact + CIDR ranges are supported. IPv6 is exact-match only

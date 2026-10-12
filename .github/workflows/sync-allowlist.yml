@@ -1,0 +1,57 @@
+# Syncs the IP allowlist to Cloudflare Pages WITHOUT storing any IP in git.
+#
+# The IPs live only in the encrypted GitHub secret ALLOWED_IPS
+# (e.g. "1.2.3.4,5.6.0.0/16"). This workflow copies that value into the
+# Cloudflare Pages project's ALLOWED_IPS env var (production + preview)
+# and retries the latest production deployment so the edge middleware
+# picks it up. Secret values are masked in logs by GitHub automatically.
+#
+# Required repo secrets (Settings -> Secrets and variables -> Actions):
+#   ALLOWED_IPS              comma-separated IPs/CIDRs, e.g. "1.2.3.4,5.6.0.0/16"
+#   CLOUDFLARE_API_TOKEN     token with Pages:Edit on the account
+#   CLOUDFLARE_ACCOUNT_ID    account ID from the Cloudflare dashboard
+#   CLOUDFLARE_PAGES_PROJECT Pages project name, e.g. "myStocks"
+#
+# Run: Actions tab -> "Sync IP allowlist" -> Run workflow.
+# When your home IP changes: gh secret set ALLOWED_IPS --body "<new-ip>"
+# and re-run this workflow.
+name: Sync IP allowlist to Cloudflare Pages
+
+on:
+  workflow_dispatch: {}
+  push:
+    paths:
+      - '.github/workflows/sync-allowlist.yml'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push ALLOWED_IPS to Cloudflare Pages env vars
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_PROJECT: ${{ secrets.CLOUDFLARE_PAGES_PROJECT }}
+          ALLOWLIST: ${{ secrets.ALLOWED_IPS }}
+        run: |
+          set -euo pipefail
+          : "${CF_TOKEN:?missing secret CLOUDFLARE_API_TOKEN}"
+          : "${CF_ACCOUNT:?missing secret CLOUDFLARE_ACCOUNT_ID}"
+          : "${CF_PROJECT:?missing secret CLOUDFLARE_PAGES_PROJECT}"
+          : "${ALLOWLIST:?missing secret ALLOWED_IPS}"
+          API="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT}/pages/projects/${CF_PROJECT}"
+
+          payload="$(jq -n --arg ip "$ALLOWLIST" \
+            '{deployment_configs: {production: {env_vars: {ALLOWED_IPS: {value: $ip}}}, preview: {env_vars: {ALLOWED_IPS: {value: $ip}}}}}' )"
+
+          echo "Updating Pages env vars..."
+          curl -sS -X PUT "$API" \
+            -H "Authorization: Bearer $CF_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "$payload" | jq '{success, errors}'
+
+          echo "Retrying latest production deployment..."
+          DEPLOY_ID="$(curl -sS "$API/deployments" \
+            -H "Authorization: Bearer $CF_TOKEN" | jq -r '.result[0].id')"
+          curl -sS -X POST "$API/deployments/${DEPLOY_ID}/retry" \
+            -H "Authorization: Bearer $CF_TOKEN" | jq '{success, errors}'

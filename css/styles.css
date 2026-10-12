@@ -1,0 +1,111 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #131722;
+  color: #d1d4dc;
+}
+
+.dashboard {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+header h1 {
+  margin: 0 0 12px;
+  font-size: 1.6rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.controls input,
+.controls select {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #2b2b43;
+  background: #1e222d;
+  color: #d1d4dc;
+}
+
+.controls input { min-width: 0; }
+#symbolInput { width: 110px; }
+#apiKeyInput { width: 220px; }
+
+.controls button {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: #2962ff;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.controls button:hover { background: #1e53e5; }
+
+.hint {
+  font-size: 0.8rem;
+  color: #787b86;
+}
+
+.hint a { color: #2962ff; }
+
+.ticker-card {
+  background: #1e222d;
+  border: 1px solid #2b2b43;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.ticker-card h2 {
+  margin: 0 0 8px;
+  letter-spacing: 0.05em;
+}
+
+.price-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#livePrice {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+#priceChange { font-size: 0.95rem; }
+#priceChange.up { color: #26a69a; }
+#priceChange.down { color: #ef5350; }
+
+.badge {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #26a69a;
+  color: #fff;
+}
+
+.badge.stale,
+.badge.limited { background: #ff9800; }
+.badge.error { background: #ef5350; }
+
+.error {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #ef5350;
+}
+
+#chartContainer {
+  background: #1e222d;
+  border: 1px solid #2b2b43;
+  border-radius: 10px;
+  overflow: hidden;
+  min-height: 400px;
+}

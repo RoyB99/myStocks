@@ -4,7 +4,11 @@ let activeInterval = '1day';
 let pollingInterval = null;
 let lastPrice = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Interim IP gate (js/gate.js). Aborts before any data is fetched when blocked.
+  const allowed = await (window.__accessGate || Promise.resolve(true));
+  if (!allowed) return;
+
   initChart('chartContainer');
 
   const symbolInput = document.getElementById('symbolInput');
